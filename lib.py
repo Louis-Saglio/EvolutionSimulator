@@ -42,7 +42,11 @@ class Being:
             new_being.genes[gene] = choice((self.genes[gene], other.genes[gene]))
         for gene in genes.difference(other.genes):
             if choice((True, False)):
-                new_being.genes[gene] = self.genes.get(gene) or other.genes.get(gene)
+                if gene in self.genes:
+                    new_gene_value = self.genes[gene]
+                else:
+                    new_gene_value = other.genes[gene]
+                new_being.genes[gene] = new_gene_value
         return new_being
 
     def mutate(self):
