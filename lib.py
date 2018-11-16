@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from random import choice, choices, randint, random
-from typing import Callable, Collection, Dict, List
 import string
+from random import choice, choices, randint, random
+from typing import Dict, List, Set
 
 
 def get_random_string(max_size: int):
@@ -14,10 +14,10 @@ class Being:
     gene_max_value = 1
 
     @classmethod
-    def build_random(cls, pop_size: int, genes_max_size: int) -> Collection[Being]:
+    def build_random(cls, pop_size: int, genes_max_size: int) -> List[Being]:
         beings: List[Being] = []
         for _ in range(pop_size):
-            being = Being()
+            being = cls(mutation_probability=0)
             for __ in range(randint(1, genes_max_size)):
                 gene_name: str = get_random_string(cls.gene_name_max_size)
                 gene_value: int = randint(0, cls.gene_max_value)
@@ -25,15 +25,12 @@ class Being:
             beings.append(being)
         return beings
 
-    def __init__(self, genes: Dict[str, int]=None, mutation_probability: float=0.01):
+    def __init__(self, genes: Dict[str, int]=None, mutation_probability: float=0.02):
         self.genes = genes or {}
         self.mutation_probability = mutation_probability
 
     def __repr__(self):
         return f"Being[genes : {self.genes}, mutation_prob : {self.mutation_probability}]"
-
-    def __eq__(self, other: Being):
-        return self.genes == other.genes
 
     def mate(self, other: Being) -> Being:
         new_being = Being()
@@ -54,6 +51,7 @@ class Being:
         to_add = {}
         for gene in self.genes:
             if random() < self.mutation_probability:
+                self.mutation_probability *= choice((random(), random() + 1))
                 result = choice((0, 1, 2, 3))
                 if result == 0:
                     self.genes[gene] += 1
@@ -70,28 +68,41 @@ class Being:
 
 class Constraint:
 
+    def apply(self, being: Being) -> int:
+        raise NotImplementedError
+
+    def __hash__(self) -> int:
+        raise NotImplementedError
+
+    def __repr__(self):
+        raise NotImplementedError
+
+
+class Order2PolynomeConstraint(Constraint):
+
     @classmethod
-    def build_random(cls) -> Constraint:
-        gene = get_random_string(Being.gene_name_max_size)
-        a, b, c = randint(-99, 99), randint(-99, 99), randint(-99, 99)
+    def build_random(cls, nbr: int) -> Set[Order2PolynomeConstraint]:
+        return {
+            cls(randint(-99, 99), randint(-99, 99), randint(-99, 99), get_random_string(Being.gene_name_max_size))
+            for _ in range(nbr)
+        }
 
-        def func(being: Being, gene_):
-            if gene_ in being.genes:
-                x = being.genes[gene_]
-                return a * x ** 2 + b * x + c
-            return 0
-        return Constraint(func, gene)
-
-    def __init__(self, func: Callable[[Being, str], int], gene: str):
+    def __init__(self, a: int, b: int, c: int, gene: str):
         self.gene = gene
-        self.func = func
+        self.a, self.b, self.c = a, b, c
 
     def __hash__(self):
-        return hash(self.func)
+        return hash((self.a, self.b, self.c, self.gene))
 
     def __repr__(self):
         # todo : show nullification point
-        return "{} {}, {}, {}".format(self.gene, self.apply(Being({self.gene: -3})), self.apply(Being({self.gene: 0})), self.apply(Being({self.gene: 3})))
+        return "{} {}, {}, {}".format(
+            self.gene,
+            self.apply(Being({self.gene: -3})),
+            self.apply(Being({self.gene: 0})),
+            self.apply(Being({self.gene: 3}))
+        )
 
     def apply(self, being: Being) -> int:
-        return self.func(being, self.gene)
+        value = being.genes.get(self.gene, 0)
+        return self.a * value ** 2 + self.b * value + self.c

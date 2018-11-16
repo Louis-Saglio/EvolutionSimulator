@@ -1,6 +1,6 @@
 import time
 from random import shuffle, randint
-from typing import List
+from typing import List, Set
 
 import lib
 
@@ -8,15 +8,15 @@ import lib
 def resume(beings, constraints, i=None):
     if i % 50 == 0:
         print('-' * 30, i if i else "")
-        for being in beings[:5]:
-            print([f"{key} : {value}" for key, value in sorted(being.genes.items())])
         for constraint in constraints:
             print(constraint)
+        for being in beings[:5]:
+            print([f"{key} : {value}" for key, value in sorted(being.genes.items())], round(being.mutation_probability, 3))
 
 
 def main():
     beings: List = lib.Being.build_random(1000, 4)
-    constraints = {lib.Constraint.build_random() for _ in range(20)}
+    constraints: Set[lib.Constraint] = lib.Order2PolynomeConstraint.build_random(30)
 
     assert len(beings) % 2 == 0
 
@@ -36,9 +36,9 @@ def main():
         beings = beings[:len(beings) // 2]
 
         # Change environment
-        if randint(0, 49) == 0:
+        if randint(1, len(constraints) * 2) == 1:
             constraints.pop()
-            constraints.add(lib.Constraint.build_random())
+            constraints.update(lib.Order2PolynomeConstraint.build_random(1))
 
         # Resume
         resume(beings, constraints, i)

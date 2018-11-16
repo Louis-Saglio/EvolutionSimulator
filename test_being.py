@@ -1,7 +1,6 @@
 import random
 from unittest import TestCase
 
-
 from lib import Being
 
 
@@ -24,4 +23,4 @@ class TestBeing(TestCase):
         random.seed(3)
         b1 = Being({"1": 1}, 1.0)
         b1.mutate()
-        self.assertEqual(b1.genes.get("1"), 0)
+        self.assertEqual(b1.genes.get("1"), 2)
