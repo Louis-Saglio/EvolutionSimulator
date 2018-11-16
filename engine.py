@@ -17,7 +17,7 @@ def main():
 
         # Get new pop
         shuffle(beings)
-        beings = beings + [male.mate(female) for male, female in zip(beings, beings)]
+        beings = beings + [male.mate(female) for male, female in zip(beings[::-1], beings)]
 
         # Mutate
         [being.mutate() for being in beings]
