@@ -5,6 +5,15 @@ from typing import List
 import lib
 
 
+def resume(beings, constraints, i=None):
+    if i % 50 == 0:
+        print('-' * 30, i if i else "")
+        for being in beings[:5]:
+            print([f"{key} : {value}" for key, value in sorted(being.genes.items())])
+        for constraint in constraints:
+            print(constraint)
+
+
 def main():
     beings: List = lib.Being.build_random(1000, 4)
     constraints = {lib.Constraint.build_random() for _ in range(20)}
@@ -32,12 +41,7 @@ def main():
             constraints.add(lib.Constraint.build_random())
 
         # Resume
-        if i % 50 == 0:
-            print('-' * 30, i)
-            for being in beings[:5]:
-                print([f"{key} : {value}" for key, value in sorted(being.genes.items())])
-            for constraint in constraints:
-                print(constraint)
+        resume(beings, constraints, i)
 
     print(round((time.time() - start) / len(beings), 2), "second per generation")
 
