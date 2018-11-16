@@ -1,5 +1,5 @@
 import time
-from random import shuffle
+from random import shuffle, randint
 from typing import List
 
 import lib
@@ -36,7 +36,7 @@ def main():
         beings = beings[:len(beings) // 2]
 
         # Change environment
-        if i % 10 == 0:
+        if randint(0, 49) == 0:
             constraints.pop()
             constraints.add(lib.Constraint.build_random())
 
